@@ -7,12 +7,19 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, googleProvider, db } from "../firebaseClient";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, query, collection, where, getDocs } from "firebase/firestore";
 
-export default function Auth() {
+// Add showPopup as a prop
+interface AuthProps {
+  showPopup: (message: string) => void;
+}
+
+export default function Auth({ showPopup }: AuthProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -26,63 +33,107 @@ export default function Auth() {
 
     try {
       let userCredential;
+
       if (isRegister) {
+        // ✅ Validate fields
+        if (!name.trim() || !age.trim() || !sex.trim()) {
+          setError("Please fill in all fields.");
+          return;
+        }
+
+        // ✅ Pre-check Firestore for duplicate email
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          setError("Email is already registered. Please login instead.");
+          return;
+        }
+
+        // ✅ Create Firebase Auth user
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-        // store user in Firestore
+        // ✅ Store user profile in Firestore
         await setDoc(doc(db, "users", userCredential.user.uid), {
-          name: name || "Unnamed User",
+          name,
+          age,
+          sex,
           email,
           createdAt: new Date().toISOString(),
         });
+
+        showPopup("✅ Account created successfully!");
       } else {
+        // 🔹 Login
         userCredential = await signInWithEmailAndPassword(auth, email, password);
+        showPopup("✅ Login successful!");
       }
 
+      // ✅ Get Firebase ID token
       const token = await userCredential.user.getIdToken();
 
-      // Verify with backend
       await fetch("http://localhost:3000/verify-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
 
-      navigate("/patient");
+      navigate("/");
     } catch (err: any) {
-      setError(err.message);
+      if (err.code === "auth/email-already-in-use") {
+        setError("Email is already registered. Please login instead.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Incorrect password. Try again.");
+      } else {
+        setError(err.message);
+      }
     }
   };
 
   // ------------------------
-  // 🔹 Google Login
+  // 🔹 Google Login + force profile completion
   // ------------------------
   const handleGoogleLogin = async () => {
+    setError("");
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
 
-      // store user in Firestore (if new)
-      await setDoc(
-        doc(db, "users", result.user.uid),
-        {
-          name: result.user.displayName || "Google User",
+      // ✅ Check Firestore only to create new document if user doesn't exist
+      const userRef = doc(db, "users", result.user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // ✅ Create Firestore user document for new Google users
+        await setDoc(userRef, {
+          name: result.user.displayName || "",
+          age: "",
+          sex: "",
           email: result.user.email,
           createdAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
+        });
+      }
 
-      // verify with backend
+      // ✅ Force complete profile if missing info
+      const profile = (await getDoc(userRef)).data();
+      if (!profile?.name || !profile?.age || !profile?.sex) {
+        return navigate("/complete-profile");
+      }
+
+      // ✅ Verify token with backend
       await fetch("http://localhost:3000/verify-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
 
-      navigate("/patient");
+      showPopup("✅ Login successful!");
+      navigate("/");
     } catch (err: any) {
-      setError(err.message);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Google sign-in popup closed. Try again.");
+      } else {
+        setError(err.message);
+      }
     }
   };
 
@@ -93,7 +144,7 @@ export default function Auth() {
     if (!email) return setError("Enter your email first.");
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("Password reset link sent!");
+      showPopup("✅ Password reset link sent!");
     } catch (err: any) {
       setError(err.message);
     }
@@ -107,17 +158,46 @@ export default function Auth() {
 
       <form onSubmit={handleAuth} className="space-y-4">
         {isRegister && (
-          <label className="block">
-            <span className="text-sm text-gray-600">Full Name</span>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              placeholder="Your name"
-              required
-            />
-          </label>
+          <>
+            <label className="block">
+              <span className="text-sm text-gray-600">Full Name</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full border rounded-lg p-2"
+                placeholder="Your name"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm text-gray-600">Age</span>
+              <input
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className="mt-1 block w-full border rounded-lg p-2"
+                placeholder="Your age"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm text-gray-600">Sex</span>
+              <select
+                value={sex}
+                onChange={(e) => setSex(e.target.value)}
+                className="mt-1 block w-full border rounded-lg p-2"
+                required
+              >
+                <option value="">Select...</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+          </>
         )}
 
         <label className="block">
@@ -126,8 +206,7 @@ export default function Auth() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            placeholder="example@email.com"
+            className="mt-1 block w-full border rounded-lg p-2"
             required
           />
         </label>
@@ -138,13 +217,12 @@ export default function Auth() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            placeholder="Enter your password"
+            className="mt-1 block w-full border rounded-lg p-2"
             required
           />
         </label>
 
-        {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
           type="submit"

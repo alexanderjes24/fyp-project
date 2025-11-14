@@ -21,3 +21,7 @@ export const googleProvider = new GoogleAuthProvider();
 
 // ✅ Initialize Firestore
 export const db = getFirestore(app);
+
+googleProvider.setCustomParameters({
+  prompt: "select_account"
+});
