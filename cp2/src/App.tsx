@@ -4,7 +4,8 @@ import Navbar from "./components/Navbar";
 import Auth from "./routes/Login";
 import Home from "./routes/Home";
 import CompleteProfile from "./routes/CompleteProfile";
-
+import BlockchainPage from "./routes/Counter";
+import ConsentPage from "./routes/Consent";
 // Simple reusable popup component
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
   if (!message) return null;
@@ -44,6 +45,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Auth showPopup={showPopup} />} />
         <Route path="/complete-profile" element={<CompleteProfile showPopup={showPopup} />} />
+        <Route path="/blockchain" element={<ConsentPage />} />
+        <Route path="/counter" element={<BlockchainPage />} />
       </Routes>
     </>
   );

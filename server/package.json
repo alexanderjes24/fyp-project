@@ -1,19 +1,16 @@
 {
   "name": "server",
-  "type": "module",
   "version": "1.0.0",
-  "description": "This project was bootstrapped with Fastify-CLI.",
+  "type": "module",
+  "description": "Fastify backend with Hardhat integration",
   "main": "app.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "dev": "tsx app.ts",
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deployConsent.ts --network localhost",
+    "node": "npx hardhat node"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@fastify/autoload": "^6.3.1",
     "@fastify/cors": "^11.1.0",
@@ -22,13 +19,22 @@
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.1.0",
-    "firebase-admin": "^13.5.0"
+    "firebase-admin": "^13.6.0",
+    "ethers": "^6.15.0"
   },
   "devDependencies": {
-    "@types/fastify-cors": "^0.1.0",
-    "@types/node": "^24.9.2",
+    "hardhat": "^2.27.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "~5.8.0",
+    "@types/node": "^22.19.1",
+    "chai": "^4.5.0",
+    "chai-as-promised": "^8.0.2",
+    "@types/chai": "^4.3.20",
+    "@types/chai-as-promised": "^8.0.2",
+    "mocha": "^11.7.5",
+    "tsx": "^4.20.6"
   }
 }

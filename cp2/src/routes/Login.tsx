@@ -71,7 +71,7 @@ export default function Auth({ showPopup }: AuthProps) {
       // ✅ Get Firebase ID token
       const token = await userCredential.user.getIdToken();
 
-      await fetch("http://localhost:3000/verify-token", {
+      await fetch("http://localhost:3000/auth/verify-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
@@ -120,7 +120,7 @@ export default function Auth({ showPopup }: AuthProps) {
       }
 
       // ✅ Verify token with backend
-      await fetch("http://localhost:3000/verify-token", {
+      await fetch("http://localhost:3000/auth/verify-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

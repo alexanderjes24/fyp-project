@@ -41,12 +41,12 @@ const NavBar = () => {
         <Link to="/about" className={getNavLinkClass("/about")}>
           About
         </Link>
-        <Link to="/services" className={getNavLinkClass("/services")}>
-          Services
+        <Link to="/counter" className={getNavLinkClass("/counter")}>
+          counter
         </Link>
-        <Link to="/therapist" className={getNavLinkClass("/therapist")}>
-          Therapist
-        </Link>
+        <Link to="/blockchain" className={getNavLinkClass("/blockchain")}>
+            blockchain
+          </Link>
       </div>
 
       {/* Desktop Navigation */}
@@ -69,8 +69,8 @@ const NavBar = () => {
           <Link to="/services" className={getNavLinkClass("/services")}>
             Services
           </Link>
-          <Link to="/therapist" className={getNavLinkClass("/therapist")}>
-            Therapist
+          <Link to="/blockchain" className={getNavLinkClass("/blockchain")}>
+            blockchain
           </Link>
 
           {/* ✅ Login / Logout Button */}
