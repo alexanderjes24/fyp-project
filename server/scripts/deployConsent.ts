@@ -1,15 +1,23 @@
-import { ethers } from "hardhat";
+// ESM-safe Hardhat import
+import hardhat from "hardhat";
+
+// Cast to "any" so TypeScript stops complaining.
+// This is the official workaround for Hardhat in ESM projects.
+const hre: any = hardhat;
 
 async function main() {
-  const Consent = await ethers.getContractFactory("Consent");
-  const consent = await Consent.deploy();
+  const ethers = hre.ethers;
 
-  await consent.deployed();
-  console.log("✅ Consent contract deployed at:", consent.address);
-  console.log(`Update your .env file with:\nCONSENT_CONTRACT_ADDRESS=${consent.address}`);
+  const ConsentFactory = await ethers.getContractFactory("Consent");
+  const contract = await ConsentFactory.deploy();
+
+  await contract.waitForDeployment();
+
+  const address = await contract.getAddress();
+  console.log("Consent deployed to:", address);
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch((err) => {
+  console.error(err);
   process.exit(1);
 });
