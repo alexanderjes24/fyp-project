@@ -15,6 +15,7 @@ import BookingPage from "./routes/BookingPage";
 
 import { getAuth, signOut } from "firebase/auth";
 import { saveQuizAnswers } from "./services/quizService";
+import AssignmentsPage from "./routes/UserAssignments";
 
 // ------------------ Popup Component ------------------
 function Popup({ message, onClose }: { message: string; onClose: () => void }) {
@@ -140,6 +141,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assignment"
+          element={
+            <ProtectedRoute>
+              <AssignmentsPage />
             </ProtectedRoute>
           }
         />

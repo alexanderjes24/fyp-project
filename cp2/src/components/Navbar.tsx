@@ -105,7 +105,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
             <>
               <Link to="/" className={isActive("/")}>Home</Link>
               <Link to="/book-session" className={isActive("/book-session")}>Book Session</Link>
-              <Link to="/blockchain" className={isActive("/blockchain")}>Blockchain</Link>
+              <Link to="/assignment" className={isActive("/assignment")}>Assignment</Link>
               <Link to="/profile" className="text-indigo-600 font-medium hover:text-indigo-800">Profile</Link>
               <button
                 onClick={() => setLogoutConfirm(true)}
