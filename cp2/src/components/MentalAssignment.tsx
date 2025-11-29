@@ -1,49 +1,110 @@
 import { CheckCircle } from "lucide-react";
+import { X } from "lucide-react";
 import type { Assignment } from "../types/data";
 
-interface MentalAssignmentProps {
+interface Props {
   assignments: Assignment[];
-  onToggleComplete: (assignmentId: string) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onToggleComplete: (id: string) => void;
+  role: "user" | "therapist";
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onAdd?: () => void; // Added onAdd prop
 }
 
-const MentalAssignment = ({ assignments, onToggleComplete }: MentalAssignmentProps) => {
+export default function MentalAssignment({
+  assignments,
+  selectedId,
+  onSelect,
+  onToggleComplete,
+  role,
+  onDelete,
+  onEdit,
+  onAdd,
+}: Props) {
   return (
     <div className="space-y-4">
-      {assignments.map((assignment) => (
+      {assignments.map((a) => (
         <div
-          key={assignment.id}
-          className={`flex items-center p-4 rounded-lg shadow-md transition duration-300 ${
-            assignment.complete
-              ? "bg-green-50 border-l-4 border-green-500"
-              : "bg-white border-l-4 border-blue-500 hover:shadow-lg"
+          key={a.id}
+          className={`p-4 rounded-xl shadow cursor-pointer ${
+            a.complete
+              ? "bg-green-50"
+              : selectedId === a.id
+              ? "bg-indigo-50"
+              : "bg-white hover:shadow-lg"
           }`}
+          onClick={() => onSelect(a.id)}
         >
-          {/* Clickable title opens assignment link */}
-          <div className="flex-1">
-            <h3
-              className={`font-semibold text-lg cursor-pointer ${
-                assignment.complete ? "line-through text-gray-500" : "text-gray-800"
-              }`}
-              onClick={() => window.open(assignment.link, "_blank")}
-            >
-              {assignment.title}
-            </h3>
-            <p className="text-sm text-gray-600">{assignment.description}</p>
-            <p className="text-xs text-gray-400">Type: {assignment.type}</p>
-          </div>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2
+                className={`font-semibold ${
+                  a.complete ? "line-through text-gray-500" : ""
+                }`}
+              >
+                {a.title}
+              </h2>
+              <p className="text-gray-600 text-sm">{a.description}</p>
+            </div>
 
-          {/* Toggle complete/incomplete */}
-          <button
-            onClick={() => onToggleComplete(assignment.id)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full transition 
-              ${assignment.complete ? "bg-green-500 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
-          >
-            <CheckCircle className="w-5 h-5" />
-          </button>
+            <div className="flex items-center gap-2">
+              {role === "user" && (
+                a.complete ? (
+                  <X
+                    className="text-red-500 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleComplete(a.id);
+                    }}
+                  />
+                ) : (
+                  <CheckCircle
+                    className="text-indigo-600 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleComplete(a.id);
+                    }}
+                  />
+                )
+              )}
+
+              {role === "therapist" && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.(a.id);
+                    }}
+                    className="text-blue-500"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.(a.id);
+                    }}
+                    className="text-red-500"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       ))}
+
+      {role === "therapist" && onAdd && (
+        <button
+          onClick={onAdd}
+          className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Add Assignment
+        </button>
+      )}
     </div>
   );
-};
-
-export default MentalAssignment;
+}

@@ -1,17 +1,19 @@
 // src/types/data.ts
 
 // Define the two main user roles
-export type Role = 'user' | 'therapist';
+export type Role = 'user' | 'therapist' | 'admin';
 
 // Used for the MentalAssignment component
 export interface Assignment {
   id: string;
-  type: 'Listen' | 'Watch' | 'Read';
+  type: "Watch" | "Listen" | "Read";
   title: string;
   description: string;
-  link: string;
+  youtubeId?: string; // <-- add this
   complete: boolean;
+  createdAt?: any; // Firestore timestamp
 }
+
 
 // Used for the ChatInterface component
 export interface Message {

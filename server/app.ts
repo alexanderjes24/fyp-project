@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.js";
 import counterRoutes from "./routes/counter.js";
 import consentRoutes from "./routes/consent.js";
 import quizRoutes from "./routes/quiz.js";
+import adminRoutes from "./routes/admin.js";   // <-- ADD THIS
 
 async function startServer() {
   const fastify = Fastify({ logger: true });
@@ -21,10 +22,11 @@ async function startServer() {
   // Routes
   await fastify.register(authRoutes, { prefix: "/auth" });
   await fastify.register(counterRoutes, { prefix: "/counter" });
-  await fastify.register(consentRoutes,{ prefix: "/consent" });
+  await fastify.register(consentRoutes, { prefix: "/consent" });
+  await fastify.register(adminRoutes, { prefix: "/admin" }); // <-- FIX
   fastify.register(quizRoutes);
+
   // Start server
-  
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
     console.log("🚀 Server running at http://localhost:3000");

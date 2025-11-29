@@ -12,7 +12,7 @@ import ConsentPage from "./routes/Consent";
 import QuizPage from "./components/PreRegistrationQuiz";
 import AboutPage from "./routes/About";
 import BookingPage from "./routes/BookingPage";
-
+import AdminPanel from "./routes/AdminPanel";
 import { getAuth, signOut } from "firebase/auth";
 import { saveQuizAnswers } from "./services/quizService";
 import AssignmentsPage from "./routes/UserAssignments";
@@ -93,6 +93,14 @@ function App() {
       )}
 
       <Routes>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutPage />} />
@@ -162,6 +170,7 @@ function App() {
         />
         {/* Catch-all → Redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
+      
       </Routes>
     </>
   );
