@@ -1,4 +1,3 @@
-// cp2(frontend)/components/Navbar.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth } from "../firebaseClient";
@@ -15,27 +14,26 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
 
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [role, setRole] = useState<"user" | "therapist" | "admin">("user");
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
       if (currentUser) {
         try {
           const token = await currentUser.getIdToken();
-
           const res = await fetch("http://localhost:3000/auth/get-user", {
-            method: "POST", // <- make sure this is POST
+            method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token }), // <- backend expects token in body
+            body: JSON.stringify({ token }),
           });
-
           const data = await res.json();
-          if (res.ok && data.role) {
-            setRole(data.role);
-          } else {
-            console.error("Failed to fetch role:", data);
-            setRole("user");
+          setRole(res.ok && data.role ? data.role : "user");
+
+          if (data.name && data.email) {
+            setUserInfo({ name: data.name, email: data.email });
           }
         } catch (err) {
           console.error("Error fetching role:", err);
@@ -43,9 +41,9 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
         }
       } else {
         setRole("user");
+        setUserInfo(null);
       }
     });
-
     return () => unsub();
   }, []);
 
@@ -60,8 +58,19 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
       ? "font-semibold border-b-2 border-black pb-1"
       : "text-gray-600 hover:text-black";
 
+  // Determine home path dynamically
+  const homePath =
+    !user
+      ? "/"
+      : role === "admin"
+      ? "/admin/dashboard"
+      : role === "therapist"
+      ? "/dashboard"
+      : "/my-bookings";
+
   return (
     <>
+      {/* Logout Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
           <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
@@ -86,68 +95,31 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
         </div>
       )}
 
-      {/* Mobile Navbar */}
-      <div className="md:hidden flex justify-around bg-white shadow-lg py-3 fixed bottom-0 w-full z-40">
-        {!user && (
-          <>
-            <Link to="/about" className={isActive("/about")}>About</Link>
-            <Link to="/services" className={isActive("/services")}>Services</Link>
-            <Link to="/blockchain" className={isActive("/blockchain")}>Blockchain</Link>
-            <Link to="/login" className="text-indigo-600 font-medium">Login</Link>
-          </>
-        )}
-
-        {user && role === "admin" && (
-          <>
-            <Link to="/admin" className={isActive("/admin")}>AdminPanel</Link>
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              className="border border-red-600 text-red-600 rounded-md px-3 py-1 hover:bg-red-600 hover:text-white transition"
-            >
-              Logout
-            </button>
-          </>
-        )}
-
-        {user && role !== "admin" && (
-          <>
-            <Link to="/" className={isActive("/")}>Home</Link>
-            <Link to="/book-session" className={isActive("/book-session")}>Book Session</Link>
-            <Link to="/assignment" className={isActive("/assignment")}>Assignment</Link>
-            <Link to="/profile" className="text-indigo-600 font-medium hover:text-indigo-800">Profile</Link>
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              className="border border-red-600 text-red-600 rounded-md px-3 py-1 hover:bg-red-600 hover:text-white transition"
-            >
-              Logout
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Desktop Navbar */}
+      {/* Navbar */}
       <div className="hidden md:flex justify-between items-center w-full fixed bg-white/80 backdrop-blur-lg shadow-md p-4 z-40">
-        <div className="flex items-center space-x-2">
-          {user && role === "admin" ? (
-            <Link to="/admin" className="font-bold text-3xl hover:text-gray-600 hover:scale-101">AdminPanel</Link>
-          ) : (
-            <Link to="/" className="font-bold text-3xl hover:text-gray-600 hover:scale-101">THERAPYMIND</Link>
-          )}
-        </div>
+        <Link to={homePath} className="font-bold text-3xl hover:text-gray-600 hover:scale-101">
+          THERAPYMIND
+        </Link>
 
         <div className="flex items-center space-x-6">
           {!user && (
             <>
+              <Link to={homePath} className={isActive(homePath)}>Home</Link>
               <Link to="/about" className={isActive("/about")}>About</Link>
               <Link to="/services" className={isActive("/services")}>Services</Link>
               <Link to="/blockchain" className={isActive("/blockchain")}>Blockchain</Link>
-              <Link to="/login" className="border border-black rounded-md px-4 py-1 hover:bg-black hover:text-white transition">Login</Link>
+              <Link
+                to="/login"
+                className="border border-black rounded-md px-4 py-1 hover:bg-black hover:text-white transition"
+              >
+                Login
+              </Link>
             </>
           )}
 
           {user && role === "admin" && (
             <>
-              <Link to="/admin" className={isActive("/admin")}>AdminPanel</Link>
+              <Link to="/admin/dashboard" className={isActive("/admin/dashboard")}>Admin Dashboard</Link>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
                 className="border border-red-600 text-red-600 rounded-md px-4 py-1 hover:bg-red-600 hover:text-white transition"
@@ -157,12 +129,27 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
             </>
           )}
 
-          {user && role !== "admin" && (
+          {user && role === "therapist" && (
             <>
-              <Link to="/" className={isActive("/")}>Home</Link>
+              <Link to="/dashboard" className={isActive("/dashboard")}>Dashboard</Link>
+              <Link to="/dashboard/bookings" className={isActive("/dashboard/bookings")}>Bookings</Link>
+              <Link to="/profile" className={isActive("/profile")}>Profile</Link>
+              <span className="font-semibold text-gray-700">Hi, {userInfo?.name || "Therapist"}</span>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="border border-red-600 text-red-600 rounded-md px-4 py-1 hover:bg-red-600 hover:text-white transition"
+              >
+                Logout
+              </button>
+            </>
+          )}
+
+          {user && role === "user" && (
+            <>
+              <Link to="/my-bookings" className={isActive("/my-bookings")}>My Bookings</Link>
               <Link to="/book-session" className={isActive("/book-session")}>Book Session</Link>
               <Link to="/assignment" className={isActive("/assignment")}>Assignment</Link>
-              <Link to="/profile" className="text-indigo-600 font-medium hover:text-indigo-800">Profile</Link>
+              <Link to="/profile" className={isActive("/profile")}>Profile</Link>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
                 className="border border-red-600 text-red-600 rounded-md px-4 py-1 hover:bg-red-600 hover:text-white transition"

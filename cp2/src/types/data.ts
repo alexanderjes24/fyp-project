@@ -17,7 +17,7 @@ export interface Assignment {
 
 // Used for the ChatInterface component
 export interface Message {
-  id: number;
+  id: string;
   sender: Role | 'system';
   text: string;
   time: string; // e.g., "10:30 PM"
@@ -42,6 +42,7 @@ export interface Booking {
   id: string; // the document id we generate: therapistId_date_time (encoded)
   userId: string;
   therapistId: string;
+  therapistName: string;
   date: string; // yyyy-mm-dd
   time: string; // "10:00 AM"
   type: "Video" | "Phone" | "Live Chat";

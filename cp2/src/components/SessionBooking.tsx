@@ -1,14 +1,15 @@
+// src/components/SessionBooking.tsx
 import { useState } from "react";
 import type { AvailableSlot } from "../types/data";
 import { getAuth } from "firebase/auth";
-import { createBooking, createChatForBooking } from "../services/bookingService";
 
 interface Props {
   therapistId: string;
+  therapistName: string;
   initialSlots: AvailableSlot[];
 }
 
-export default function SessionBooking({ therapistId, initialSlots }: Props) {
+export default function SessionBooking({ therapistId, therapistName, initialSlots }: Props) {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedType, setSelectedType] = useState<"Video" | "Phone" | "Live Chat" | "">("");
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
@@ -16,7 +17,7 @@ export default function SessionBooking({ therapistId, initialSlots }: Props) {
 
   const handleConfirm = async () => {
     if (!selectedDate || !selectedType || !selectedSlot) {
-      alert("Please select date, type and time.");
+      alert("Please select date, type, and time.");
       return;
     }
 
@@ -29,19 +30,23 @@ export default function SessionBooking({ therapistId, initialSlots }: Props) {
 
     setLoading(true);
     try {
-      const bookingId = await createBooking({
-        userId: user.uid,
-        therapistId,
-        date: selectedDate,
-        time: selectedSlot.time,
-        type: selectedType,
+      const res = await fetch("http://localhost:3000/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.uid,
+          therapistId,
+          therapistName,   // ✅ now always defined
+          date: selectedDate,
+          time: selectedSlot.time,
+          type: selectedType,
+        }),
       });
 
-      // Optionally create chat doc
-      await createChatForBooking(bookingId, user.uid, therapistId);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Booking failed");
 
-      alert("Booking created successfully!");
-      // navigate to profile/dashboard or chat page if you have one
+      alert(`Booking created successfully! ID: ${data.bookingId}`);
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to create booking.");
@@ -77,7 +82,7 @@ export default function SessionBooking({ therapistId, initialSlots }: Props) {
         <option value="Live Chat">Live Chat</option>
       </select>
 
-      {selectedType !== "" && (
+      {selectedType && (
         <>
           <label className="font-semibold">Available Time Slots</label>
           <div className="grid grid-cols-2 gap-3 mt-2">
@@ -88,7 +93,9 @@ export default function SessionBooking({ therapistId, initialSlots }: Props) {
                   key={slot.id}
                   onClick={() => setSelectedSlot(slot)}
                   className={`p-3 border rounded-lg transition text-center ${
-                    selectedSlot?.id === slot.id ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-gray-200"
+                    selectedSlot?.id === slot.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
                   }`}
                 >
                   {slot.time}

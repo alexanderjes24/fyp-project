@@ -1,45 +1,77 @@
 // src/routes/BookingPage.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SessionBooking from "../components/SessionBooking";
 import type { AvailableSlot } from "../types/data";
+import { getAuth } from "firebase/auth";
 
-const therapists = [
-  { id: "t1", name: "Dr. Amelia Tan" },
-  { id: "t2", name: "Dr. Jason Lee" },
-  { id: "t3", name: "Dr. Nur Aisha" },
-];
-
-const timeSlots = ["09:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"];
+interface Therapist {
+  id: string;
+  name: string;
+}
 
 export default function BookingPage() {
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [selectedTherapist, setSelectedTherapist] = useState("");
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // When user selects a therapist — generate time slots
-  const handleTherapistSelect = (id: string) => {
-    setSelectedTherapist(id);
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
 
-    const generatedSlots: AvailableSlot[] = timeSlots.flatMap((time, index) =>
-      ["Video", "Phone", "Live Chat"].map((type, typeIndex) => ({
-        id: index * 3 + typeIndex + 1,
-        time,
-        type: type as "Video" | "Phone" | "Live Chat",
-        therapistId: id,
-      }))
-    );
+  // -----------------------------
+  // Fetch real therapists from backend
+  // -----------------------------
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/booking/therapists");
+        if (!res.ok) throw new Error("Failed to fetch therapists");
 
-    setSlots(generatedSlots);
-  };
+        const data = await res.json();
+
+        // must be: { therapists: [{ id, name }] }
+        setTherapists(data.therapists || []);
+      } catch (err) {
+        console.error("Failed to load therapists:", err);
+        setTherapists([]); 
+      }
+    };
+
+    fetchTherapists();
+  }, []);
+
+  // -----------------------------
+  // Generate fixed time slots
+  // -----------------------------
+  useEffect(() => {
+    if (!selectedTherapist) {
+      setSlots([]);
+      return;
+    }
+
+    const timeSlots = ["09:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"];
+
+    const generated: AvailableSlot[] = timeSlots.map((time, idx) => ({
+      id: idx + 1,
+      time,
+      type: "Video",
+      therapistId: selectedTherapist,
+    }));
+
+    setSlots(generated);
+  }, [selectedTherapist]);
+
+  const therapist = therapists.find((t) => t.id === selectedTherapist);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-2xl mx-auto space-y-6">
+      <h2 className="text-2xl font-bold mb-4">Book a Session</h2>
 
-      {/* Step 1: Pick Therapist */}
-      <h2 className="text-2xl font-bold mb-4">Choose Therapist</h2>
+      {/* Therapist Dropdown */}
       <select
         className="border px-3 py-2 rounded w-full mb-6"
         value={selectedTherapist}
-        onChange={(e) => handleTherapistSelect(e.target.value)}
+        onChange={(e) => setSelectedTherapist(e.target.value)}
       >
         <option value="">Select therapist</option>
         {therapists.map((t) => (
@@ -49,12 +81,18 @@ export default function BookingPage() {
         ))}
       </select>
 
-      {/* Step 2: Session Booking */}
-      {selectedTherapist && (
+      {/* Booking Component */}
+      {therapist && slots.length > 0 && (
         <SessionBooking
-          therapistId={selectedTherapist}
+          therapistId={therapist.id}
+          therapistName={therapist.name}
           initialSlots={slots}
         />
+      )}
+
+      {selectedTherapist && loadingSlots && <div>Loading available slots...</div>}
+      {selectedTherapist && !loadingSlots && slots.length === 0 && (
+        <div>No available slots for this therapist.</div>
       )}
     </div>
   );
