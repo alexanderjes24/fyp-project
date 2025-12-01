@@ -83,13 +83,26 @@ export default function TherapistDashboard() {
   // Open Chat
   // ---------------------
   const handleOpenChat = async (bookingId: string) => {
+    if (!therapistId) return;
+
     setSelectedBookingId(bookingId);
     setIsChatOpen(true);
 
     try {
-      const res = await fetch(`http://localhost:3000/chat/${bookingId}`);
+      // Pass therapistId for backend verification
+      const res = await fetch(`http://localhost:3000/chat/${bookingId}?therapistId=${therapistId}`);
+      if (!res.ok) throw new Error("Failed to load chat");
+
       const data = await res.json();
-      setChatMessages(data.messages || []);
+      // Map timestamp to time string if needed
+      const msgs: Message[] = data.messages.map((m: any) => ({
+        id: m.id,
+        sender: m.sender,
+        text: m.text,
+        time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+        blockchainTxHash: m.blockchainTxHash || undefined,
+      }));
+      setChatMessages(msgs);
     } catch (err) {
       console.error("Failed to load chat:", err);
     }
@@ -99,7 +112,7 @@ export default function TherapistDashboard() {
   // Send Chat Message
   // ---------------------
   const handleSendMessage = async (text: string) => {
-    if (!selectedBookingId) return;
+    if (!selectedBookingId || !therapistId) return;
 
     try {
       await fetch(`http://localhost:3000/chat/send`, {
@@ -109,13 +122,21 @@ export default function TherapistDashboard() {
           chatId: selectedBookingId,
           sender: "therapist",
           text,
+          therapistId, // verify backend
         }),
       });
 
-      // Reload chat messages
-      const res = await fetch(`http://localhost:3000/chat/${selectedBookingId}`);
+      // Reload chat messages after sending
+      const res = await fetch(`http://localhost:3000/chat/${selectedBookingId}?therapistId=${therapistId}`);
       const data = await res.json();
-      setChatMessages(data.messages || []);
+      const msgs: Message[] = data.messages.map((m: any) => ({
+        id: m.id,
+        sender: m.sender,
+        text: m.text,
+        time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+        blockchainTxHash: m.blockchainTxHash || undefined,
+      }));
+      setChatMessages(msgs);
     } catch (err) {
       console.error("Failed to send message:", err);
     }
@@ -124,7 +145,6 @@ export default function TherapistDashboard() {
   // ---------------------
   // UI
   // ---------------------
-
   if (!therapistId) {
     return (
       <div className="p-6 text-center text-red-600">
