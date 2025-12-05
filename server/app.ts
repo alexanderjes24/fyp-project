@@ -9,6 +9,7 @@ import quizRoutes from "./routes/quiz.js";
 import adminRoutes from "./routes/admin.js";
 import bookingRoutes from "./routes/booking"; // make sure this path is correct
 import chatRoutes from "./routes/chat"; // <-- import your chat routes
+import therapistRoutes from "./routes/therapist"; // <-- import therapist routes
 
 async function startServer() {
   const fastify = Fastify({ logger: true });
@@ -36,6 +37,7 @@ async function startServer() {
   await fastify.register(bookingRoutes, { prefix: "/booking" });
   await fastify.register(quizRoutes, { prefix: "/quiz" });
   await fastify.register(chatRoutes, { prefix: "/chat" }); // <-- register chat routes
+  await fastify.register(therapistRoutes, { prefix: "/therapist" }); // <-- register therapist routes
 
   // -------------------------
   // Start server

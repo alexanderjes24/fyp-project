@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -16,7 +17,7 @@ import AdminPanel from "./routes/AdminPanel";
 import AssignmentsPage from "./routes/UserAssignments";
 import AdminDashboard from "./routes/AdminDashboard";
 import TherapistDashboard from "./routes/TherapistDashboard";
-
+import TherapistPage from "./routes/Therapist"
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { saveQuizAnswers } from "./services/quizService";
 
@@ -60,7 +61,7 @@ function LogoutModal({ onConfirm, onCancel }: any) {
 
 // ------------------ ProtectedRoute ------------------
 const ProtectedRoute = ({ user, children }: { user: any; children: ReactNode }) => {
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 // ------------------ App Component ------------------
@@ -71,12 +72,14 @@ function App() {
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<"user" | "therapist" | "admin">("user");
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null);
+  const [hasRedirected, setHasRedirected] = useState(false); // one-time redirect flag
+
   const navigate = useNavigate();
 
-  // Firebase Auth Listener
+  // ------------------ Firebase Auth Listener ------------------
   useEffect(() => {
     const auth = getAuth();
-    return onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
 
@@ -92,22 +95,36 @@ function App() {
           const fetchedRole = res.ok && data.role ? data.role : "user";
           setRole(fetchedRole);
           if (data.name && data.email) setUserInfo({ name: data.name, email: data.email });
-
-          // Redirect based on role
-          if (fetchedRole === "therapist") navigate("/dashboard");
-          if (fetchedRole === "admin") navigate("/admin/dashboard");
         } catch (err) {
           console.error("Error fetching user info:", err);
         }
       }
     });
-  }, [navigate]);
 
+    return unsubscribe;
+  }, []);
+
+  // ------------------ One-time role-based redirect after login ------------------
+  useEffect(() => {
+    if (!authLoading && user && !hasRedirected) {
+      if (role === "therapist") {
+        navigate("/dashboard", { replace: true });
+        setHasRedirected(true);
+      } else if (role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+        setHasRedirected(true);
+      }
+      // Normal users: no auto-redirect
+    }
+  }, [authLoading, user, role, navigate, hasRedirected]);
+
+  // ------------------ Popup ------------------
   const showPopup = (message: string) => {
     setPopupMessage(message);
     setTimeout(() => setPopupMessage(""), 3000);
   };
 
+  // ------------------ Logout ------------------
   const handleLogout = async () => {
     const auth = getAuth();
     await signOut(auth);
@@ -127,7 +144,6 @@ function App() {
     <>
       <Navbar setLogoutConfirm={setLogoutConfirm} />
       <Popup message={popupMessage} onClose={() => setPopupMessage("")} />
-
       {logoutConfirm && (
         <LogoutModal
           onConfirm={handleLogout}
@@ -136,17 +152,17 @@ function App() {
       )}
 
       <Routes>
-        {/* Public */}
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<Auth showPopup={showPopup} />} />
-
+        <Route path="/all-therapist" element={<TherapistPage />} />
         {/* Protected Routes */}
         <Route
           path="/profile"
           element={
             <ProtectedRoute user={user}>
-              <Profile />
+              <Profile showPopup={showPopup} />
             </ProtectedRoute>
           }
         />
@@ -166,7 +182,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/complete-profile"
           element={
@@ -175,16 +190,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
-          path="/blockchain"
+          path="/all-therapist"
           element={
             <ProtectedRoute user={user}>
-              <ConsentPage />
+              <TherapistPage />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/assignment"
           element={
@@ -193,7 +206,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/quiz"
           element={
@@ -224,7 +236,7 @@ function App() {
           }
         />
 
-        {/* Admin */}
+        {/* Admin Dashboard */}
         <Route
           path="/admin/dashboard"
           element={
@@ -233,7 +245,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/admin"
           element={

@@ -107,7 +107,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
               <Link to={homePath} className={isActive(homePath)}>Home</Link>
               <Link to="/about" className={isActive("/about")}>About</Link>
               <Link to="/services" className={isActive("/services")}>Services</Link>
-              <Link to="/blockchain" className={isActive("/blockchain")}>Blockchain</Link>
+              <Link to="/all-therapist" className={isActive("/all-therapist")}>Therapist</Link>
               <Link
                 to="/login"
                 className="border border-black rounded-md px-4 py-1 hover:bg-black hover:text-white transition"
@@ -132,9 +132,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
           {user && role === "therapist" && (
             <>
               <Link to="/dashboard" className={isActive("/dashboard")}>Dashboard</Link>
-              <Link to="/dashboard/bookings" className={isActive("/dashboard/bookings")}>Bookings</Link>
               <Link to="/profile" className={isActive("/profile")}>Profile</Link>
-              <span className="font-semibold text-gray-700">Hi, {userInfo?.name || "Therapist"}</span>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
                 className="border border-red-600 text-red-600 rounded-md px-4 py-1 hover:bg-red-600 hover:text-white transition"
@@ -149,6 +147,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
               <Link to="/my-bookings" className={isActive("/my-bookings")}>My Bookings</Link>
               <Link to="/book-session" className={isActive("/book-session")}>Book Session</Link>
               <Link to="/assignment" className={isActive("/assignment")}>Assignment</Link>
+              <Link to="/all-therapist" className={isActive("/all-therapist")}>Therapist</Link>
               <Link to="/profile" className={isActive("/profile")}>Profile</Link>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
