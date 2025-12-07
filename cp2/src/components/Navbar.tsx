@@ -107,7 +107,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
               <Link to={homePath} className={isActive(homePath)}>Home</Link>
               <Link to="/about" className={isActive("/about")}>About</Link>
               <Link to="/services" className={isActive("/services")}>Services</Link>
-              <Link to="/all-therapist" className={isActive("/all-therapist")}>Therapist</Link>
+              <Link to="/therapist" className={isActive("/therapist")}>Therapist</Link>
               <Link
                 to="/login"
                 className="border border-black rounded-md px-4 py-1 hover:bg-black hover:text-white transition"
@@ -120,6 +120,7 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
           {user && role === "admin" && (
             <>
               <Link to="/admin/dashboard" className={isActive("/admin/dashboard")}>Admin Dashboard</Link>
+              <Link to="/profile" className={isActive("/profile")}>Profile</Link>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
                 className="border border-red-600 text-red-600 rounded-md px-4 py-1 hover:bg-red-600 hover:text-white transition"

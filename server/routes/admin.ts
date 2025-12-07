@@ -1,4 +1,7 @@
+// server/routes/admin.ts
 import { FastifyInstance } from "fastify";
+import crypto from "crypto";
+import { storeCredentialHash } from "../blockchain/credential";
 
 export default async function adminRoutes(fastify: FastifyInstance) {
   const db = fastify.firebase.firestore();
@@ -8,8 +11,6 @@ export default async function adminRoutes(fastify: FastifyInstance) {
   // ---------------------------
   // Users
   // ---------------------------
-
-  // Get all users
   fastify.get("/users", async (req, reply) => {
     try {
       const snapshot = await db.collection("users").get();
@@ -20,7 +21,6 @@ export default async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Promote to therapist
   fastify.post("/promote", async (req, reply) => {
     const { uid } = req.body as { uid: string };
     if (!uid) return reply.status(400).send({ error: "Missing uid" });
@@ -32,7 +32,6 @@ export default async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Revoke therapist
   fastify.post("/revoke", async (req, reply) => {
     const { uid } = req.body as { uid: string };
     if (!uid) return reply.status(400).send({ error: "Missing uid" });
@@ -44,21 +43,18 @@ export default async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Ban user
   fastify.post("/ban", async (req, reply) => {
     const { uid } = req.body as { uid: string };
     await db.collection("users").doc(uid).update({ banned: true });
     return { success: true };
   });
 
-  // Unban user
   fastify.post("/unban", async (req, reply) => {
     const { uid } = req.body as { uid: string };
     await db.collection("users").doc(uid).update({ banned: false });
     return { success: true };
   });
 
-  // Stats
   fastify.get("/stats", async (req, reply) => {
     try {
       const snapshot = await db.collection("users").get();
@@ -78,8 +74,6 @@ export default async function adminRoutes(fastify: FastifyInstance) {
   // ---------------------------
   // Therapist Credentials
   // ---------------------------
-
-  // Get all therapist credentials
   fastify.get("/therapist-creds", async (req, reply) => {
     try {
       const snapshot = await db.collection("therapistCredentials").get();
@@ -90,14 +84,59 @@ export default async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Approve credentials
+  // ---------------------------
+  // Approve credentials, generate hash, store on blockchain
+  // ---------------------------
   fastify.post("/approve-cred", async (req, reply) => {
     const { uid } = req.body as { uid: string };
     if (!uid) return reply.status(400).send({ error: "Missing uid" });
 
     try {
-      await db.collection("therapistCredentials").doc(uid).update({ approval: "approved" });
-      return { success: true };
+      const docRef = db.collection("therapistCredentials").doc(uid);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) return reply.status(404).send({ error: "Credentials not found" });
+
+      const data = docSnap.data() as any;
+
+      // ---- Generate SHA256 hash ----
+      const hash = crypto
+        .createHash("sha256")
+        .update(
+          JSON.stringify({
+            uid,
+            name: data.name,
+            university: data.university,
+            license: data.license,
+            dateOfLicense: data.dateOfLicense,
+          })
+        )
+        .digest("hex");
+
+      // ---- Store hash on blockchain ----
+      let txHash: string | null = null;
+      
+      try {
+        // This will now throw an error if it fails, instead of returning null
+        const receipt = await storeCredentialHash(uid, hash);
+        txHash = receipt.hash; // ethers v6 receipt uses .hash, NOT .transactionHash
+      } catch (err: any) {
+        console.error("Blockchain storage failed:", err.message);
+        // DECISION: Do you want to stop here? 
+        // Or continue saving to Firebase but mark it as 'blockchain_failed'?
+        
+        // Option A: Stop and tell frontend (Recommended for debugging)
+        return reply.status(500).send({ error: "Blockchain Transaction Failed: " + err.message });
+      }
+
+      // ---- Update Firestore ----
+      // Only runs if blockchain succeeded
+      await docRef.update({
+        approval: "approved",
+        hash,
+        txHash, // This is now guaranteed to be a string
+      });
+
+      return { success: true, hash, txHash };
     } catch (err: any) {
       reply.status(500).send({ error: err.message });
     }

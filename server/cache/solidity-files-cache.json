@@ -72,6 +72,42 @@
       "artifacts": [
         "Counter"
       ]
+    },
+    "C:\\Users\\User\\Documents\\GitHub\\fyp-project\\server\\contracts\\CredentialRegistry.sol": {
+      "lastModificationDate": 1764952451649,
+      "contentHash": "4cf5da1533ec929f003aa3e3b8f6c5a5",
+      "sourceName": "contracts/CredentialRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "CredentialRegistry"
+      ]
     }
   }
 }

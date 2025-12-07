@@ -17,7 +17,8 @@ import AdminPanel from "./routes/AdminPanel";
 import AssignmentsPage from "./routes/UserAssignments";
 import AdminDashboard from "./routes/AdminDashboard";
 import TherapistDashboard from "./routes/TherapistDashboard";
-import TherapistPage from "./routes/Therapist"
+import TherapistPage from "./routes/Therapist"; // <- Added
+
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { saveQuizAnswers } from "./services/quizService";
 
@@ -70,9 +71,9 @@ function App() {
   const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState<"user" | "therapist" | "admin">("user");
+  const [role, setRole] = useState<"user" | "therapist" | "admin" | null>(null);
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null);
-  const [hasRedirected, setHasRedirected] = useState(false); // one-time redirect flag
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   const navigate = useNavigate();
 
@@ -98,6 +99,8 @@ function App() {
         } catch (err) {
           console.error("Error fetching user info:", err);
         }
+      } else {
+        setRole(null);
       }
     });
 
@@ -106,15 +109,15 @@ function App() {
 
   // ------------------ One-time role-based redirect after login ------------------
   useEffect(() => {
-    if (!authLoading && user && !hasRedirected) {
+    if (!authLoading && user && role && !hasRedirected) {
       if (role === "therapist") {
         navigate("/dashboard", { replace: true });
-        setHasRedirected(true);
       } else if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
-        setHasRedirected(true);
+      } else if (role === "user") {
+        navigate("/my-bookings", { replace: true });
       }
-      // Normal users: no auto-redirect
+      setHasRedirected(true);
     }
   }, [authLoading, user, role, navigate, hasRedirected]);
 
@@ -130,6 +133,7 @@ function App() {
     await signOut(auth);
     setLogoutConfirm(false);
     navigate("/login");
+    setHasRedirected(false); // reset for next login
   };
 
   if (authLoading) {
@@ -156,7 +160,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<Auth showPopup={showPopup} />} />
-        <Route path="/all-therapist" element={<TherapistPage />} />
+        <Route path="/therapist" element={<TherapistPage />} /> {/* <- Added public route */}
+
         {/* Protected Routes */}
         <Route
           path="/profile"
@@ -191,10 +196,10 @@ function App() {
           }
         />
         <Route
-          path="/all-therapist"
+          path="/blockchain"
           element={
             <ProtectedRoute user={user}>
-              <TherapistPage />
+              <ConsentPage />
             </ProtectedRoute>
           }
         />

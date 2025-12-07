@@ -16,25 +16,28 @@
     "@fastify/cors": "^11.1.0",
     "@fastify/sensible": "^6.0.0",
     "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.1.0",
-    "firebase-admin": "^13.6.0",
-    "ethers": "^6.15.0"
+    "firebase-admin": "^13.6.0"
   },
   "devDependencies": {
-    "hardhat": "^2.27.0",
-    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
     "@nomicfoundation/hardhat-ethers": "^3.1.0",
-    "ts-node": "^10.9.2",
-    "typescript": "~5.8.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.20",
+    "@types/chai-as-promised": "^8.0.2",
     "@types/node": "^22.19.1",
     "chai": "^4.5.0",
     "chai-as-promised": "^8.0.2",
-    "@types/chai": "^4.3.20",
-    "@types/chai-as-promised": "^8.0.2",
+    "hardhat": "^2.27.0",
     "mocha": "^11.7.5",
-    "tsx": "^4.20.6"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typechain": "^8.3.2",
+    "typescript": "~5.8.0"
   }
 }

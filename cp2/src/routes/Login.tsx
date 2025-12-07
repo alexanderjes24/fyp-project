@@ -63,7 +63,7 @@ export default function Auth({ showPopup }: AuthProps) {
         body: JSON.stringify({ token }),
       });
 
-      navigate("/");
+      navigate("/profile");
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
         setError("Email is already registered. Please login instead.");
@@ -106,7 +106,7 @@ export default function Auth({ showPopup }: AuthProps) {
       });
 
       showPopup("✅ Login successful!");
-      navigate("/");
+      navigate("/profile");
     } catch (err: any) {
       if (err.code === "auth/popup-closed-by-user") {
         setError("Google sign-in popup closed. Try again.");

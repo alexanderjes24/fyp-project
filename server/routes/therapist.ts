@@ -2,6 +2,7 @@
 import { FastifyInstance } from "fastify";
 import admin from "firebase-admin";
 import crypto from "crypto";
+import { getVerifiedCredential } from "../blockchain/credential";
 
 interface SubmitCredsBody {
   uid: string;
@@ -104,8 +105,40 @@ export default async function therapistRoutes(fastify: FastifyInstance) {
   // Public: Get all therapists with credentials
   // -----------------------------
   fastify.get("/all-therapists", async (request, reply) => {
-    const snapshot = await db.collection("therapistCredentials").get();
-    const therapists = snapshot.docs.map((doc) => ({ uid: doc.id, ...(doc.data() as any) }));
-    reply.send({ therapists });
-  });
+  const { uid } = request.query as { uid?: string };
+
+  if (uid) {
+    const docSnap = await db.collection("therapistCredentials").doc(uid).get();
+    if (!docSnap.exists) return reply.code(404).send({ error: "Therapist not found" });
+    return reply.send({ credentials: docSnap.data() });
+  }
+
+  const snapshot = await db.collection("therapistCredentials").get();
+  const therapists = snapshot.docs.map((doc) => ({ uid: doc.id, ...(doc.data() as any) }));
+  reply.send({ therapists });
+});
+
+
+fastify.get("/verify-cred/:uid", async (req, reply) => {
+    const { uid } = req.params as { uid: string };
+
+    try {
+        // 1. Fetch canonical data directly from the blockchain
+        const blockchainData = await getVerifiedCredential(uid);
+
+        if (!blockchainData) {
+            return reply.status(200).send({ verified: false, message: "No record found on chain." });
+        }
+
+        // 2. Data found! Return the verified hash and timestamp.
+        return reply.send({ 
+            verified: true, 
+            hash: blockchainData.hash,
+            timestamp: blockchainData.timestamp
+        });
+
+    } catch (err: any) {
+        reply.status(500).send({ verified: false, error: "Blockchain connection error." });
+    }
+});
 }
