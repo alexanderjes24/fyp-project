@@ -105,42 +105,59 @@ export default function TherapistDashboard() {
     if (!activeCallId || !therapistId) return;
     setIsSubmittingBlock(true);
 
-    try {
-      // 1. Send Record to Backend
-      const recordRes = await fetch(`http://localhost:3000/medical-record/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: activeCallId,
-          therapistId,
-          ...recordData
-        }),
-      });
-
-      if (!recordRes.ok) throw new Error("Failed to store medical record");
-
-      // 2. Resolve the booking
-      await fetch(`http://localhost:3000/booking/resolve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId: activeCallId, therapistId }),
-      });
-
-      setBookings((prev) =>
-        prev.map((b) => (b.id === activeCallId ? { ...b, status: "completed" } : b))
-      );
-
-      setShowRecordForm(false);
-      setActiveCallId(null);
-      alert("Session completed! Medical record hashed and secured on blockchain.");
-
-    } catch (err) {
-      console.error("Error in session completion:", err);
-      alert("Error saving record. Please try again.");
-    } finally {
-      setIsSubmittingBlock(false);
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Authentication error. User not found. Please log in again.");
+        setIsSubmittingBlock(false);
+        return;
     }
-  };
+
+    try {
+        // Fetch the user's ID token for backend authorization
+        const token = await user.getIdToken(); 
+
+        // 1. Send Record to Backend (This handles hashing and blockchain storage)
+        const recordRes = await fetch(`http://localhost:3000/therapist/medical-record/create`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`, // 🚨 FIX: Adding the necessary token
+            },
+            body: JSON.stringify({
+                bookingId: activeCallId,
+                therapistId,
+                ...recordData
+            }),
+        });
+
+        if (!recordRes.ok) {
+            const errorData = await recordRes.json().catch(() => ({}));
+            // Provide a better error message if the backend sends one
+            throw new Error(errorData.error || `Failed to store medical record. Status: ${recordRes.status}`);
+        }
+
+        // 2. Resolve the booking
+        await fetch(`http://localhost:3000/booking/resolve`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bookingId: activeCallId, therapistId }),
+        });
+
+        setBookings((prev) =>
+            prev.map((b) => (b.id === activeCallId ? { ...b, status: "completed" } : b))
+        );
+
+        setShowRecordForm(false);
+        setActiveCallId(null);
+        alert("Session completed! Medical record hashed and secured on blockchain.");
+
+    } catch (err: any) {
+        console.error("Error in session completion:", err);
+        alert(err.message || "Error saving record. Please try again.");
+    } finally {
+        setIsSubmittingBlock(false);
+    }
+};
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (!therapistId) return <div className="p-10 text-center text-red-500">Access Denied</div>;

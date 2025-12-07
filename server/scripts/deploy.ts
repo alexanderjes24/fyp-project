@@ -21,11 +21,11 @@ async function main() {
   if (balance <= 0) throw new Error("Insufficient funds to deploy the contract");
 
   // Use CredentialRegistry artifact
-  const artifact = await hre.artifacts.readArtifact("CredentialRegistry");
+  const artifact = await hre.artifacts.readArtifact("DataRegistry");
 
   const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, wallet);
 
-  console.log("Deploying CredentialRegistry contract...");
+  console.log("Deploying DataRegistry contract...");
 
   const contract = await factory.deploy();
   await contract.waitForDeployment();

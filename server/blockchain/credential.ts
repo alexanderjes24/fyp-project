@@ -1,8 +1,7 @@
 // server/blockchain/credential.ts
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
-import CredentialRegistryArtifact from "../artifacts/contracts/CredentialRegistry.sol/CredentialRegistry.json";
-
+import DataRegistryArtifact from "../artifacts/contracts/DataRegistry.sol/DataRegistry.json";
 dotenv.config();
 
 let provider: ethers.JsonRpcProvider | null = null;
@@ -26,7 +25,7 @@ function initBlockchain() {
   // 1. Log this to ensure you are talking to the right contract
   console.log(`🔌 Connecting to Contract at: ${contractAddress}`);
 
-  const contractABI = CredentialRegistryArtifact.abi;
+  const contractABI = DataRegistryArtifact.abi;
   contract = new ethers.Contract(contractAddress, contractABI, wallet);
 }
 
