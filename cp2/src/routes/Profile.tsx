@@ -121,7 +121,7 @@ export default function Profile({ showPopup }: ProfileProps) {
 
   // --- Rendering Logic ---
   return (
-    <div className="min-h-screen flex justify-center bg-gray-50 pt-32 px-4">
+    <div className="min-h-screen flex justify-center bg-gray-50 pt-20 px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl space-y-4">
         <h1 className="text-2xl font-bold text-indigo-700 mb-6 text-center">
           My Profile

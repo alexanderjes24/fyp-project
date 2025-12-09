@@ -11,7 +11,7 @@ interface Props {
 
 export default function SessionBooking({ therapistId, therapistName, initialSlots }: Props) {
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedType, setSelectedType] = useState<"Video" | "Phone" | "Live Chat" | "">("");
+  const [selectedType, setSelectedType] = useState<"Video" | "Voice Call" | "">("");
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -78,8 +78,7 @@ export default function SessionBooking({ therapistId, therapistName, initialSlot
       >
         <option value="">Select Type</option>
         <option value="Video">Video</option>
-        <option value="Phone">Phone</option>
-        <option value="Live Chat">Live Chat</option>
+        <option value="Voice Call">Voice Call</option>
       </select>
 
       {selectedType && (

@@ -8,6 +8,7 @@
     "dev": "tsx app.ts",
     "start": "tsx app.ts",
     "compile": "npx hardhat compile",
+    "hardhat:node": "npx hardhat node",
     "deploy": "npx hardhat run scripts/deployConsent.ts --network localhost",
     "node": "npx hardhat node"
   },

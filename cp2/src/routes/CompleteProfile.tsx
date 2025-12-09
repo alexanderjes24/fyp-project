@@ -39,14 +39,15 @@ export default function CompleteProfile({ showPopup }: CompleteProfileProps) {
 
       // ✅ Show popup
       showPopup("✅ Profile completed successfully!");
-      navigate("/");
+      navigate("/profile");
     } catch (err: any) {
       setError(err.message);
     }
   };
 
   return (
-    <div className="my-20 max-w-md mx-auto bg-white p-8 rounded-2xl shadow-2xl">
+    <div className="pt-20">
+    <div className="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-2xl">
       <h2 className="text-2xl font-semibold mb-6 text-center text-indigo-700">
         Complete Your Profile
       </h2>
@@ -98,6 +99,7 @@ export default function CompleteProfile({ showPopup }: CompleteProfileProps) {
           Save & Continue
         </button>
       </form>
+    </div>
     </div>
   );
 }

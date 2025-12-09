@@ -28,7 +28,7 @@ export interface Message {
 export interface AvailableSlot {
   id: number;
   time: string; // e.g., "10:00 AM"
-  type: 'Video' | 'Phone' | 'Live Chat';
+  type: 'Video' | 'Voice Call';
   therapistId: string;
 }
 
