@@ -1,22 +1,27 @@
-
 {
   "name": "fyp-project",
   "version": "1.0.0",
   "description": "Hybrid Blockchain Therapy Platform Project Orchestrator",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run start:server\" \"npm run start:client\" \"npm run start:blockchain\"",
-    "start:server": "npm --prefix server run dev", 
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently -n \"CHAIN,SETUP\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run start:blockchain\" \"npm run setup:contracts\"",
+    "setup:contracts": "wait-on tcp:127.0.0.1:8545 && npm --prefix server run deploy:local && npm run start:apps",
+    "start:apps": "concurrently -n \"SERVER,CLIENT\" -c \"blue,green\" \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "npm --prefix server run dev",
     "start:client": "npm --prefix cp2 run dev",
-    "start:blockchain": "npm --prefix server run hardhat:node", 
-    
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:blockchain": "npm --prefix server run hardhat:node"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexanderjes24/fyp-project.git"
   },
-  "keywords": ["blockchain", "therapy", "hybrid-architecture", "fullstack"],
+  "keywords": [
+    "blockchain",
+    "therapy",
+    "hybrid-architecture",
+    "fullstack"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -25,6 +30,7 @@
   },
   "homepage": "https://github.com/alexanderjes24/fyp-project#readme",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "wait-on": "^9.0.3"
   }
 }

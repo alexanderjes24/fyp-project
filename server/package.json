@@ -9,8 +9,9 @@
     "start": "tsx app.ts",
     "compile": "npx hardhat compile",
     "hardhat:node": "npx hardhat node",
-    "deploy": "npx hardhat run scripts/deployConsent.ts --network localhost",
-    "node": "npx hardhat node"
+    "deploy": "npx hardhat run scripts/deploy.ts --network localhost",
+
+    "deploy:local": "npm run compile && npm run deploy"
   },
   "dependencies": {
     "@fastify/autoload": "^6.3.1",

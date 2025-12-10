@@ -174,21 +174,21 @@ export default async function bookingRoutes(fastify: FastifyInstance) {
 // GET /booking/medical-record?bookingId=xxx
 // Fetches full record and verifies integrity against Blockchain proof
 // -------------------------------------------------------
-  fastify.get("/medical-record", async (req, reply) => {
-    try {
-      const { bookingId } = req.query as { bookingId: string };
-      if (!bookingId) return reply.code(400).send({ error: "Missing bookingId" });
+ fastify.get("/medical-record", async (req, reply) => {
+     try {
+       const { bookingId } = req.query as { bookingId: string };
+       if (!bookingId) return reply.code(400).send({ error: "Missing bookingId" });
 
-      // 1. Fetch Record from Firestore
-      const recordSnap = await db.collection("medicalRecords").doc(bookingId).get();
-      if (!recordSnap.exists) {
-        return reply.code(404).send({ error: "Medical record not found for this booking." });
-      }
+     // 1. Fetch Record from Firestore
+     const recordSnap = await db.collection("medicalRecords").doc(bookingId).get();
+     if (!recordSnap.exists) {
+         return reply.code(404).send({ error: "Medical record not found for this booking." });
+      }
 
-      const recordData = recordSnap.data() as any;
-      
-      // 2. Check Blockchain for Canonical Proof
-      const blockchainProof = await getVerifiedMedicalRecord(bookingId);
+      const recordData = recordSnap.data() as any;
+      
+    // 2. Check Blockchain for Canonical Proof
+    const blockchainProof = await getVerifiedMedicalRecord(bookingId);
       
       let isVerified = false;
       let verificationDetails = "No proof found on blockchain.";
@@ -221,21 +221,21 @@ export default async function bookingRoutes(fastify: FastifyInstance) {
           }
       }
 
-      // 5. Return Data with Verification Status
-      return reply.send({
-        ...recordData,
-        verification: {
-          isVerified,
+       // 5. Return Data with Verification Status
+      return reply.send({
+         ...recordData,
+         verification: {
+          isVerified,
           status: verificationDetails,
           onChainHash: blockchainProof ? blockchainProof.hash : null,
           localCalculatedHash: verificationHash,
           timestamp: blockchainProof ? blockchainProof.timestamp : null,
-        }
-      });
-    } catch (err: any) {
-      return reply.code(500).send({ error: "Failed to retrieve or verify medical record: " + err.message });
-    }
-  });
+        }
+      });
+     } catch (err: any) {
+       return reply.code(500).send({ error: "Failed to retrieve or verify medical record: " + err.message });
+     }
+   });
 
 // -------------------------------------------------------
 // GET /booking/verify-record/:bookingId

@@ -127,9 +127,10 @@ export default function Auth({ showPopup }: AuthProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100"> {/* CHANGE: bg-gray-50 -> bg-gray-100 */}
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-2xl">
-        <h2 className="text-2xl font-semibold mb-6 text-center text-indigo-700">
+        {/* CHANGE: text-indigo-700 -> text-indigo-600 */}
+        <h2 className="text-2xl font-semibold mb-6 text-center text-indigo-600">
           {isRegister ? "Create an Account" : "Welcome Back"}
         </h2>
 
@@ -140,7 +141,8 @@ export default function Auth({ showPopup }: AuthProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border rounded-lg p-2"
+              // ADD: focus:ring-indigo-500 for better focus state
+              className="mt-1 block w-full border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               required
             />
           </label>
@@ -151,7 +153,8 @@ export default function Auth({ showPopup }: AuthProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full border rounded-lg p-2"
+              // ADD: focus:ring-indigo-500 for better focus state
+              className="mt-1 block w-full border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               required
             />
           </label>
@@ -160,7 +163,8 @@ export default function Auth({ showPopup }: AuthProps) {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+            // CHANGE: bg-indigo-600/700 -> bg-indigo-500/600
+            className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition"
           >
             {isRegister ? "Sign Up" : "Login"}
           </button>
@@ -168,7 +172,8 @@ export default function Auth({ showPopup }: AuthProps) {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+            // CHANGE: bg-red-500/600 -> bg-red-400/500 (lighter red)
+            className="w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-500 transition"
           >
             Continue with Google
           </button>
@@ -177,7 +182,8 @@ export default function Auth({ showPopup }: AuthProps) {
             <button
               type="button"
               onClick={handleForgotPassword}
-              className="w-full text-indigo-600 text-sm mt-2"
+              // CHANGE: text-indigo-600 -> text-indigo-500
+              className="w-full text-indigo-500 text-sm mt-2 hover:text-indigo-600 transition"
             >
               Forgot password?
             </button>
@@ -188,7 +194,8 @@ export default function Auth({ showPopup }: AuthProps) {
           {isRegister ? "Already have an account?" : "Don’t have an account?"}{" "}
           <button
             onClick={() => setIsRegister(!isRegister)}
-            className="text-indigo-600 font-medium"
+            // CHANGE: text-indigo-600 -> text-indigo-500
+            className="text-indigo-500 font-medium hover:text-indigo-600 transition"
           >
             {isRegister ? "Login here" : "Register"}
           </button>
