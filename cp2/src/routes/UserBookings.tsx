@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import type { Booking, Message } from "../types/data";
 import ChatInterface from "../components/ChatInterface";
+import { Link } from "react-router-dom";
 
 // --- TYPE DEFINITIONS ---
 interface MedicalRecordVerification {
@@ -255,12 +256,13 @@ export default function UserDashboard() {
       <p className="text-gray-600 mb-6">
         You're all caught up! Book your next appointment to continue your wellness journey.
       </p>
+      <Link to="/book-session">
       <button
-        onClick={() => alert("Simulating Navigation to Booking Page...")}
         className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition duration-150"
       >
         Book Your First Appointment
       </button>
+      </Link>
     </div>
   );
 
@@ -351,7 +353,7 @@ export default function UserDashboard() {
   // 💻 MAIN RENDER
   // ------------------------------------
   return (
-    <div className="relative flex min-h-screen">
+    <div className="pt-20 relative flex min-h-screen">
       {/* ---------- MAIN BOOKINGS / EMPTY STATE CONTAINER (Center/Top) ---------- */}
       <div className={`flex-1 p-6 max-w-2xl mx-auto w-full ${activeBookings.length === 0 ? 'flex flex-col' : 'space-y-4'}`}>
         

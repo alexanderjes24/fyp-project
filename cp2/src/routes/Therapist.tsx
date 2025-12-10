@@ -145,11 +145,7 @@ export default function AllTherapists() {
                 </span>
               </div>
 
-              <div className="border border-dashed border-indigo-300 p-4 mt-6 rounded-lg bg-indigo-50 text-center">
-                <p className="text-indigo-600 font-medium">
-                    View Attached Documents for Full Verification
-                </p>
-              </div>
+              
             </div>
 
             {/* Action Buttons (Only Close) */}

@@ -64,7 +64,7 @@ export default function BookingPage() {
   const therapist = therapists.find((t) => t.id === selectedTherapist);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="pt-20 p-6 max-w-2xl mx-auto space-y-6">
       <h2 className="text-2xl font-bold mb-4">Book a Session</h2>
 
       {/* Therapist Dropdown */}
