@@ -3,8 +3,6 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 
-// NOTE: You must update this path/name if you changed the contract file/artifact name!
-// Assuming you use the same artifact structure as before, but with the new functions.
 import DataRegistryArtifact from "../artifacts/contracts/DataRegistry.sol/DataRegistry.json";
 
 dotenv.config();

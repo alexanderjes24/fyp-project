@@ -68,9 +68,6 @@ export default function AllTherapists() {
               <div className="space-y-2">
                 <h2 className="text-xl font-semibold text-indigo-600">{t.name}</h2>
                 <p className="text-gray-600">
-                  <span className="font-medium">University:</span> {t.university}
-                </p>
-                <p className="text-gray-600">
                   <span className="font-medium">License:</span> {t.license}
                 </p>
               </div>
