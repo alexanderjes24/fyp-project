@@ -3,8 +3,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import firebasePlugin from "./plugins/firebase";
 import authRoutes from "./routes/auth.js";
-import counterRoutes from "./routes/counter.js";
-import consentRoutes from "./routes/consent.js";
+
 import quizRoutes from "./routes/quiz.js";
 import adminRoutes from "./routes/admin.js";
 import bookingRoutes from "./routes/booking"; // make sure this path is correct
@@ -31,8 +30,6 @@ async function startServer() {
   // Routes
   // -------------------------
   await fastify.register(authRoutes, { prefix: "/auth" });
-  await fastify.register(counterRoutes, { prefix: "/counter" });
-  await fastify.register(consentRoutes, { prefix: "/consent" });
   await fastify.register(adminRoutes, { prefix: "/admin" });
   await fastify.register(bookingRoutes, { prefix: "/booking" });
   await fastify.register(quizRoutes, { prefix: "/quiz" });

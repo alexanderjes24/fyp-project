@@ -69,6 +69,7 @@ export default async function bookingRoutes(fastify: FastifyInstance) {
           status: "pending",
           createdAt: Timestamp.now(),
           blockchainTxHash: null,
+
         });
       });
 

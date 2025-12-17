@@ -8,7 +8,6 @@ import Profile from "./routes/Profile";
 import Auth from "./routes/Login";
 import Home from "./routes/Home";
 import CompleteProfile from "./routes/CompleteProfile";
-import ConsentPage from "./routes/Consent";
 import QuizPage from "./components/PreRegistrationQuiz";
 import AboutPage from "./routes/About";
 import BookingPage from "./routes/BookingPage";
@@ -192,14 +191,6 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <CompleteProfile showPopup={showPopup} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/blockchain"
-          element={
-            <ProtectedRoute user={user}>
-              <ConsentPage />
             </ProtectedRoute>
           }
         />

@@ -106,7 +106,6 @@ const NavBar = ({ setLogoutConfirm }: NavBarProps) => {
             <>
               <Link to={homePath} className={isActive(homePath)}>Home</Link>
               <Link to="/about" className={isActive("/about")}>About</Link>
-              <Link to="/services" className={isActive("/services")}>Services</Link>
               <Link to="/therapist" className={isActive("/therapist")}>Therapist</Link>
               <Link
                 to="/login"

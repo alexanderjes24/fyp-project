@@ -44,23 +44,32 @@ export default function BookingPage() {
   // Generate fixed time slots
   // -----------------------------
   useEffect(() => {
-    if (!selectedTherapist) {
-      setSlots([]);
-      return;
-    }
+  if (!selectedTherapist) {
+    setSlots([]);
+    return;
+  }
 
-    const timeSlots = ["09:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"];
-
-    const generated: AvailableSlot[] = timeSlots.map((time, idx) => ({
-      id: idx + 1,
+  const timeStrings = ["09:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"];
+  
+  const generated: AvailableSlot[] = timeStrings.flatMap((time, idx) => [
+    {
+      // Assigns even numbers (0, 2, 4...)
+      id: idx * 2, 
       time,
       type: "Video",
       therapistId: selectedTherapist,
-    }));
+    },
+    {
+      // Assigns odd numbers (1, 3, 5...)
+      id: idx * 2 + 1, 
+      time,
+      type: "Voice Call",
+      therapistId: selectedTherapist,
+    }
+  ]);
 
-    setSlots(generated);
-  }, [selectedTherapist]);
-
+  setSlots(generated);
+}, [selectedTherapist]);
   const therapist = therapists.find((t) => t.id === selectedTherapist);
 
   return (

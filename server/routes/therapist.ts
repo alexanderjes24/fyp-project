@@ -102,64 +102,6 @@ export default async function therapistRoutes(fastify: FastifyInstance) {
         reply.send({ success: true, credentials });
     });
 
-    // -----------------------------
-    // Admin approves credential & stores hash on blockchain
-    // -----------------------------
-    fastify.post("/approve-cred", async (request, reply) => {
-        const { uid } = request.body as { uid: string };
-        const currentUser = (request as any).user;
-
-        if (currentUser.role !== "admin") {
-            return reply.code(403).send({ error: "Forbidden: Admin required" });
-        }
-        if (!uid) return reply.status(400).send({ error: "Missing uid" });
-
-        try {
-            const docRef = db.collection("therapistCredentials").doc(uid);
-            const docSnap = await docRef.get();
-            if (!docSnap.exists) return reply.status(404).send({ error: "Credentials not found" });
-
-            const data = docSnap.data() as any;
-            if (data.approval === "approved") return reply.send({ success: true, hash: data.hash, txHash: data.txHash });
-
-            // 1. Generate SHA256 hash
-            const dataToHash = {
-                uid,
-                name: data.name,
-                university: data.university,
-                license: data.license,
-                dateOfLicense: data.dateOfLicense,
-            };
-
-            const hash = crypto
-                .createHash("sha256")
-                .update(JSON.stringify(dataToHash))
-                .digest("hex");
-
-            const formattedHash = `0x${hash}`;
-            let txHash: string;
-
-            // 2. Store hash on blockchain using the helper
-            try {
-                const receipt = await storeCredentialHash(uid, formattedHash);
-                txHash = receipt.hash;
-            } catch (err: any) {
-                console.error("Blockchain storage failed:", err.message);
-                return reply.status(500).send({ error: "Blockchain Transaction Failed: " + err.message });
-            }
-
-            // 3. Update Firestore (Only runs if blockchain succeeded)
-            await docRef.update({
-                approval: "approved",
-                hash: formattedHash,
-                txHash,
-            });
-
-            return { success: true, hash: formattedHash, txHash };
-        } catch (err: any) {
-            reply.status(500).send({ error: err.message });
-        }
-    });
 
     // ------------------------------------
     // Create and Hash Medical Record (Protected)
