@@ -39,10 +39,10 @@ export default function AllTherapists() {
     fetchTherapists();
   }, []);
 
-  if (loading) return <p className="text-center mt-20 text-gray-500">Loading therapists...</p>;
+  if (loading) return <p className="text-center text-gray-500">Loading therapists...</p>;
 
   return (
-    <div className="min-h-screen w-full p-6 bg-gray-50">
+    <div className="min-h-screen w-full pt-23 bg-gray-50">
       
       {/* KEY CHANGE 1: Reduced Max-Width to max-w-3xl for a pronounced central column effect */}
       <div className="max-w-3xl mx-auto"> 

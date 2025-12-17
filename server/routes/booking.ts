@@ -266,7 +266,7 @@ fastify.get("/verify-record/:bookingId", async (req, reply) => {
         });
 
     } catch (err: any) {
-        reply.status(500).send({ verified: false, error: "Blockchain connection error." });
+        reply.status(500).send({ verified: false, error: "Data Potential Tampered." });
     }
 });
 }

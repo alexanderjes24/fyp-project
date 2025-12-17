@@ -43,17 +43,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.post("/ban", async (req, reply) => {
-    const { uid } = req.body as { uid: string };
-    await db.collection("users").doc(uid).update({ banned: true });
-    return { success: true };
-  });
-
-  fastify.post("/unban", async (req, reply) => {
-    const { uid } = req.body as { uid: string };
-    await db.collection("users").doc(uid).update({ banned: false });
-    return { success: true };
-  });
+  
 
   fastify.get("/stats", async (req, reply) => {
     try {

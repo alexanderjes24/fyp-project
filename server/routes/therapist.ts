@@ -52,7 +52,7 @@ export default async function therapistRoutes(fastify: FastifyInstance) {
             request.url.startsWith("/therapist/check-credentials") ||
             request.url.startsWith("/therapist/submit-credentials") ||
             request.url.startsWith("/therapist/approve-cred") ||
-            request.url.startsWith("/therapist/medical-record/create") ||
+            request.url.startsWith("/therapist/medical-record") ||
             request.url.startsWith("/therapist/quiz-results") // <--- FIX APPLIED HERE
         ) {
             const token = request.headers.authorization?.split(" ")[1];
@@ -178,7 +178,46 @@ export default async function therapistRoutes(fastify: FastifyInstance) {
             }
         }
     );
+    fastify.get("/medical-record/:bookingId", async (request, reply) => {
+        const { bookingId } = request.params as { bookingId: string };
+        const currentUser = (request as any).user;
 
+        if (!currentUser) {
+            return reply.code(401).send({ error: "Unauthorized" });
+        }
+
+        try {
+            // 1. Fetch record from Firestore
+            const recordDoc = await db.collection("medicalRecords").doc(bookingId).get();
+
+            if (!recordDoc.exists) {
+                return reply.code(404).send({ error: "Medical record not found." });
+            }
+
+            const recordData = recordDoc.data();
+
+            // 2. Authorization Check: Ensure only the therapist who wrote it (or an admin) can see it
+            if (recordData?.therapistId !== currentUser.uid && currentUser.role !== "admin") {
+                return reply.code(403).send({ error: "Forbidden: You are not authorized to view this record." });
+            }
+
+            // 3. Return the record formatted for the frontend
+            return reply.send({
+                success: true,
+                record: {
+                    diagnosis: recordData?.diagnosis,
+                    prescription: recordData?.prescription,
+                    notes: recordData?.notes,
+                    blockchainHash: recordData?.blockchainHash,
+                    timestamp: recordData?.timestamp,
+                }
+            });
+
+        } catch (err: any) {
+            console.error("Error fetching medical record:", err);
+            reply.status(500).send({ error: "Failed to fetch medical record." });
+        }
+    });
     // ------------------------------------
     // NEW: Get Quiz Results by User ID (Patient)
     // ------------------------------------
@@ -265,25 +304,53 @@ export default async function therapistRoutes(fastify: FastifyInstance) {
     // Public: Verify Credential on Chain
     // -----------------------------
     fastify.get("/verify-cred/:uid", async (req, reply) => {
-        const { uid } = req.params as { uid: string };
+  const { uid } = req.params as { uid: string };
 
-        try {
-            // 1. Fetch canonical data directly from the blockchain
-            const blockchainData = await getVerifiedCredential(uid);
+  try {
+    // 1. Get current data from Firestore
+    const docRef = db.collection("therapistCredentials").doc(uid);
+    const docSnap = await docRef.get();
 
-            if (!blockchainData) {
-                return reply.status(200).send({ verified: false, message: "No record found on chain." });
-            }
+    if (!docSnap.exists) {
+      return reply.status(404).send({ verified: false, message: "No record in database." });
+    }
 
-            // 2. Data found! Return the verified hash and timestamp.
-            return reply.send({
-                verified: true,
-                hash: blockchainData.hash,
-                timestamp: blockchainData.timestamp
-            });
+    const data = docSnap.data() as any;
 
-        } catch (err: any) {
-            reply.status(500).send({ verified: false, error: "Blockchain connection error." });
-        }
-    });
+    // 2. RE-GENERATE HASH (MUST match Admin Dashboard logic exactly)
+    // We use JSON.stringify because that's what approve-cred uses
+    const currentHash = crypto
+      .createHash("sha256")
+      .update(
+        JSON.stringify({
+          uid: uid,
+          name: data.name,
+          university: data.university,
+          license: data.license,
+          dateOfLicense: data.dateOfLicense,
+        })
+      )
+      .digest("hex");
+
+    // 3. Get the original hash from Blockchain
+    const blockchainData = await getVerifiedCredential(uid);
+
+    if (!blockchainData || !blockchainData.hash) {
+      return reply.send({ verified: false, message: "Not found on blockchain." });
+    }
+
+    // 4. Compare
+    const isVerified = (currentHash === blockchainData.hash);
+
+    return reply.send({
+      verified: isVerified,
+      hash: blockchainData.hash,     // The "True" hash
+      currentHash: currentHash,      // The "Calculated" hash
+      timestamp: blockchainData.timestamp
+    });
+
+  } catch (err: any) {
+    reply.status(500).send({ error: "Verification failed: " + err.message });
+  }
+});
 }

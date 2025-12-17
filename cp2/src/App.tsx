@@ -12,7 +12,7 @@ import QuizPage from "./components/PreRegistrationQuiz";
 import AboutPage from "./routes/About";
 import BookingPage from "./routes/BookingPage";
 import UserBookings from "./routes/UserBookings";
-import AdminPanel from "./routes/AdminPanel";
+
 import AssignmentsPage from "./routes/UserAssignments";
 import AdminDashboard from "./routes/AdminDashboard";
 import TherapistDashboard from "./routes/TherapistDashboard";
@@ -241,14 +241,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute user={user && role === "admin" ? user : null}>
-              <AdminPanel />
-            </ProtectedRoute>
-          }
-        />
+        
 
         {/* 404 → Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
