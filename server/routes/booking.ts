@@ -238,35 +238,4 @@ export default async function bookingRoutes(fastify: FastifyInstance) {
      }
    });
 
-// -------------------------------------------------------
-// GET /booking/verify-record/:bookingId
-// Fetches only the immutable proof hash and metadata from the blockchain (Simplified)
-// -------------------------------------------------------
-fastify.get("/verify-record/:bookingId", async (req, reply) => {
-    const { bookingId } = req.params as { bookingId: string };
-
-    try {
-        // 1. Fetch canonical proof data directly from the blockchain
-        const blockchainData = await getVerifiedMedicalRecord(bookingId);
-
-        if (!blockchainData) {
-            return reply.status(200).send({ 
-                verified: false, 
-                message: "No immutable record found on chain for this booking." 
-            });
-        }
-
-        // 2. Data found! Return the stored proof details.
-        return reply.send({
-            verified: true,
-            message: "Proof found on chain.",
-            hash: blockchainData.hash,
-            therapistId: blockchainData.therapistId,
-            timestamp: blockchainData.timestamp
-        });
-
-    } catch (err: any) {
-        reply.status(500).send({ verified: false, error: "Data Potential Tampered." });
-    }
-});
-}
+  }

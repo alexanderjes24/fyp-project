@@ -13,26 +13,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // --- Create therapist route ---
-  fastify.post("/create-therapist", async (request, reply) => {
-    const { email, uid } = request.body as { email: string; uid: string };
-    const db = fastify.firebase.firestore();
-
-    if (!email || !uid) {
-      return reply.status(400).send({ error: "Missing email or uid" });
-    }
-
-    try {
-      // Update Firestore user document
-      await db.collection("users").doc(uid).update({
-        role: "therapist",
-      });
-
-      return { success: true, message: `${email} is now a therapist` };
-    } catch (err: any) {
-      reply.status(500).send({ error: err.message });
-    }
-  });
+  
 
   fastify.post("/get-user", async (request, reply) => {
     const { token } = request.body as { token?: string };
