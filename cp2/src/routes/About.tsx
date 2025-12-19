@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import Footer from '../components/Footer';
+
 // Import necessary Lucide Icons
 import { Shield, Globe, Fingerprint, Lock, Zap } from 'lucide-react'; 
 
@@ -146,9 +146,7 @@ const About = () => {
                 </Link>
             </div>
 
-            <div className="pt-20">
-                <Footer/>
-            </div>
+            
         </div>
     );
 }

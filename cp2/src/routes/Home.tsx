@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Footer from '../components/Footer';
+
 import home from '../assets/home.png';
 
 export default function Home(){
@@ -163,8 +163,7 @@ export default function Home(){
                 </div>
             </div>
 
-            {/* Footer */}
-            <Footer/>
+            
         </div>
     )
 }
